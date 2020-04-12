@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "resourceId": "/subscriptions/0e908628-3e0c-4756-839c-48e8ed729f63/resourceGroups/VeligdenskoJajce20200405150410ResourceGroup/providers/Microsoft.Sql/servers/mysqlserver-blago/databases/VeligdenskoJajce_db",
+      "type": "mssql.azure",
+      "connectionId": "VeligdenskoJajceContext",
+      "secretStore": "AzureAppSettings"
+    }
+  }
+}

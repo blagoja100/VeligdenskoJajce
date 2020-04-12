@@ -132,7 +132,7 @@ namespace VeligdenskoJajce.Controllers
             if(game == null || game.RoomId == 0 || game.OwnerId == 0 || game.SecondUserId == 0)
             {
                 return BadRequest();
-            }
+            }            
 
             var gameRoom = _context.PlayRooms.FirstOrDefault(g => g.Id == game.RoomId && g.OwnerId == game.OwnerId && g.SecondUserId == game.SecondUserId);
 
@@ -142,7 +142,11 @@ namespace VeligdenskoJajce.Controllers
             }
 
             gameRoom.IsGameStarted = true;
-          
+            gameRoom.HasWinner = true;
+
+            var randomNumber = new Random().Next();
+            gameRoom.IsOwnerWinner = randomNumber % 2 == 0;
+
             await _context.SaveChangesAsync();
 
             return Accepted(gameRoom);

@@ -19,5 +19,6 @@ namespace VeligdenskoJajce.Model
         public string SecondUserPictureUrl { get; set; }
         public bool IsGameStarted { get; set; }
         public bool IsOwnerWinner { get; set; }
+        public bool HasWinner { get; set; }
     }
 }
