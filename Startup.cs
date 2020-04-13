@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using VeligdenskoJajce.Data;
 
@@ -29,8 +30,16 @@ namespace VeligdenskoJajce
         {
             services.AddControllers();
 
+            services.AddAuthentication("Bearer")
+               .AddJwtBearer("Bearer", options =>
+               {
+                   options.Authority = "https://identityserveroauth20200412232913.azurewebsites.net";
+                   options.RequireHttpsMetadata = false;
+                   options.Audience = "api1";
+               });
+
             services.AddDbContext<VeligdenskoJajceContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("VeligdenskoJajceContext")));
+                    options.UseSqlServer(Configuration.GetConnectionString("VeligdenskoJajceContext")));          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +54,7 @@ namespace VeligdenskoJajce
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

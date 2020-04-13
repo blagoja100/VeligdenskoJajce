@@ -113,7 +113,7 @@ namespace VeligdenskoJajce.Controllers
 
             if(!string.IsNullOrWhiteSpace(playRoom.RoomPassword) && playRoom.RoomPassword != game.RoomPassword)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
             playRoom.SecondUserId = game.SecondUserId;
