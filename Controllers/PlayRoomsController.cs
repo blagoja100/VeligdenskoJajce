@@ -15,7 +15,7 @@ namespace VeligdenskoJajce.Controllers
     [ApiController]
     public class PlayRoomsController : ControllerBase
     {
-        private readonly VeligdenskoJajceContext _context;
+        protected readonly VeligdenskoJajceContext _context;
 
         public PlayRoomsController(VeligdenskoJajceContext context)
         {
@@ -27,6 +27,8 @@ namespace VeligdenskoJajce.Controllers
         [Route("all")]
         public async Task<ActionResult<IEnumerable<PlayRoom>>> GetPlayRooms()
         {
+            CleanExpiredRooms();
+
             return await _context.PlayRooms.ToListAsync();
         }
 
@@ -35,8 +37,10 @@ namespace VeligdenskoJajce.Controllers
         [Route("available")]
         public async Task<ActionResult<IEnumerable<PlayRoom>>> GetAvailablePlayRooms()
         {
+            CleanExpiredRooms();
+
             return await _context.PlayRooms.Where(r => r.SecondUserId == null).ToListAsync();
-        }
+        }       
 
         // GET: api/PlayRooms/5
         [HttpGet("{id}")]
@@ -88,6 +92,14 @@ namespace VeligdenskoJajce.Controllers
         [Route("createroom")]
         public async Task<ActionResult<PlayRoom>> PostCreateRoom(PlayRoom playRoom)
         {
+            if(playRoom == null || playRoom.OwnerId == 0 
+                || string.IsNullOrWhiteSpace(playRoom.OwnerName)
+                || string.IsNullOrWhiteSpace(playRoom.RoomName))
+            {
+                return BadRequest();
+            }
+
+            playRoom.DateCreated = DateTime.UtcNow;
             _context.PlayRooms.Add(playRoom);
 
             await _context.SaveChangesAsync();
@@ -152,6 +164,29 @@ namespace VeligdenskoJajce.Controllers
             return Accepted(gameRoom);
         }
 
+        [HttpPost]
+        [Route("gamereset")]
+        public async Task<ActionResult<PlayRoom>> PostGameReset(GameStart game)
+        {
+            if (game == null || game.RoomId == 0 || game.OwnerId == 0 || game.SecondUserId == 0)
+            {
+                return BadRequest();
+            }
+
+            var gameRoom = _context.PlayRooms.FirstOrDefault(g => g.Id == game.RoomId && g.OwnerId == game.OwnerId && g.SecondUserId == game.SecondUserId);
+
+            if (gameRoom == null)
+            {
+                return NoContent();
+            }
+
+            gameRoom.HasWinner = false;            
+
+            await _context.SaveChangesAsync();
+
+            return Accepted(gameRoom);
+        }
+
         // DELETE: api/PlayRooms/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<PlayRoom>> DeletePlayRoom(int id)
@@ -171,6 +206,17 @@ namespace VeligdenskoJajce.Controllers
         private bool PlayRoomExists(int id)
         {
             return _context.PlayRooms.Any(e => e.Id == id);
+        }
+
+        private void CleanExpiredRooms()
+        {
+            var expiredRooms = _context.PlayRooms.Where(r => r.SecondUserId == null && r.DateCreated.HasValue && r.DateCreated.Value.AddMinutes(5) < DateTime.UtcNow).ToList();
+
+            if (expiredRooms.Count > 0)
+            {
+                _context.PlayRooms.RemoveRange(expiredRooms);
+                _context.SaveChanges();
+            }
         }
     }
 }

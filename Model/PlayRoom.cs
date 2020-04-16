@@ -20,5 +20,6 @@ namespace VeligdenskoJajce.Model
         public bool IsGameStarted { get; set; }
         public bool IsOwnerWinner { get; set; }
         public bool HasWinner { get; set; }
+        public DateTime? DateCreated { get; set; }
     }
 }
